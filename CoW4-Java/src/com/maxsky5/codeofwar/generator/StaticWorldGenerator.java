@@ -1,15 +1,14 @@
-package fr.ttfx.cow4.generator;
+package com.maxsky5.codeofwar.generator;
 
 /**
  * Created by Arsenik on 18/08/15.
  */
 
-import com.google.gson.JsonObject;
-import fr.ttfx.cow4.socket.CharacterSkin;
-import fr.ttfx.cow4.socket.SocketManager;
-import fr.ttfx.cow4.world.Cell;
-import fr.ttfx.cow4.world.DynamicGameWorld;
-import fr.ttfx.cow4.world.GameWorld;
+import com.maxsky5.codeofwar.actions.IA;
+import com.maxsky5.codeofwar.socket.SocketManager;
+import com.maxsky5.codeofwar.world.DynamicGameWorld;
+import com.maxsky5.codeofwar.world.GameWorld;
+import com.maxsky5.codeofwar.socket.CharacterSkin;
 
 /**
  * en: This class generates the labyrinth data structure for StaticGameWorld class
@@ -19,17 +18,13 @@ public class StaticWorldGenerator {
 
     public static void main(String[] args) {
         new SocketManager().connectToServer(
-                args[0],
-                Integer.parseInt(args[1]),
-                "staticWorlGenerator",
+                "localhost",
+                8127,
+                "MyAI",
                 "",
-                "",
+                "http://cdn5.coloritou.com/dessins/peindre/2011001/b03d302a8229d1f520dd950b130566be.png",
                 CharacterSkin.BARBARIAN,
-                (world) -> {
-                    printWorld(world);
-                    System.exit(0);
-                    return null;
-                },
+                IA::executeTurn,
                 new DynamicGameWorld());
     }
 

@@ -14,8 +14,8 @@ import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
-import fr.ttfx.cow4.world.Cell;
-import fr.ttfx.cow4.world.StaticGameWorld;
+import com.maxsky5.codeofwar.world.Cell;
+import com.maxsky5.codeofwar.world.StaticGameWorld;
 
 
 /**

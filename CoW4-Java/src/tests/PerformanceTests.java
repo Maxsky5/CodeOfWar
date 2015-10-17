@@ -1,8 +1,8 @@
 package tests;
 
-import fr.ttfx.cow4.world.Cell;
-import fr.ttfx.cow4.world.GameWorld;
-import fr.ttfx.cow4.world.StaticGameWorld;
+import com.maxsky5.codeofwar.world.Cell;
+import com.maxsky5.codeofwar.world.GameWorld;
+import com.maxsky5.codeofwar.world.StaticGameWorld;
 
 import java.time.Duration;
 import java.time.Instant;

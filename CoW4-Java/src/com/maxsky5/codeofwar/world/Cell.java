@@ -1,4 +1,4 @@
-package fr.ttfx.cow4.world;
+package com.maxsky5.codeofwar.world;
 
 /**
  * Created by TheArsenik on 16/08/15.

@@ -1,6 +1,6 @@
-package fr.ttfx.cow4.actions;
+package com.maxsky5.codeofwar.actions;
 
-import fr.ttfx.cow4.world.Item;
+import com.maxsky5.codeofwar.world.Item;
 
 /**
  * Created by Arsenik on 19/08/15.

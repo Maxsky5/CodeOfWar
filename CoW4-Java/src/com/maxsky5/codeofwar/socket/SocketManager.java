@@ -1,13 +1,12 @@
-package fr.ttfx.cow4.socket;
+package com.maxsky5.codeofwar.socket;
 
 import com.google.gson.*;
-import fr.ttfx.cow4.actions.Order;
-import fr.ttfx.cow4.world.GameWorld;
+import com.maxsky5.codeofwar.actions.Order;
+import com.maxsky5.codeofwar.world.GameWorld;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**

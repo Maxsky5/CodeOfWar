@@ -1,4 +1,4 @@
-package fr.ttfx.cow4.socket;
+package com.maxsky5.codeofwar.socket;
 
 /**
  * Created by Arsenik on 21/08/15.

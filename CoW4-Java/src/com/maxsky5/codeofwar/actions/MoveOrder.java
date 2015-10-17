@@ -1,4 +1,4 @@
-package fr.ttfx.cow4.actions;
+package com.maxsky5.codeofwar.actions;
 
 /**
  * Created by Arsenik on 19/08/15.

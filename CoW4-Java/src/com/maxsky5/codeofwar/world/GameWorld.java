@@ -1,10 +1,10 @@
-package fr.ttfx.cow4.world;
+package com.maxsky5.codeofwar.world;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
-import fr.ttfx.cow4.socket.CharacterSkin;
+import com.maxsky5.codeofwar.socket.CharacterSkin;
 
 import java.util.*;
 

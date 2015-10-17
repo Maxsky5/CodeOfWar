@@ -1,6 +1,6 @@
-package fr.ttfx.cow4.world;
+package com.maxsky5.codeofwar.world;
 
-import fr.ttfx.cow4.socket.CharacterSkin;
+import com.maxsky5.codeofwar.socket.CharacterSkin;
 
 import java.util.ArrayList;
 import java.util.List;

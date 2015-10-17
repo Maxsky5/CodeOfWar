@@ -1,11 +1,10 @@
 package tests;
 
-import fr.ttfx.cow4.actions.Order;
-import fr.ttfx.cow4.socket.CharacterSkin;
-import fr.ttfx.cow4.socket.Response;
-import fr.ttfx.cow4.socket.SocketManager;
-import fr.ttfx.cow4.world.GameWorld;
-import fr.ttfx.cow4.world.StaticGameWorld;
+import com.maxsky5.codeofwar.actions.Order;
+import com.maxsky5.codeofwar.socket.CharacterSkin;
+import com.maxsky5.codeofwar.socket.SocketManager;
+import com.maxsky5.codeofwar.world.GameWorld;
+import com.maxsky5.codeofwar.world.StaticGameWorld;
 
 import java.io.*;
 import java.net.Socket;

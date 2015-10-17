@@ -1,7 +1,6 @@
-package fr.ttfx.cow4.socket;
+package com.maxsky5.codeofwar.socket;
 
-import fr.ttfx.cow4.actions.Order;
-import fr.ttfx.cow4.world.AI;
+import com.maxsky5.codeofwar.actions.Order;
 
 import java.util.List;
 
