@@ -29,11 +29,21 @@ public class IA {
         List<Order> orders = new ArrayList<>();
         Cell[][] labyrinth = world.getLabyrinth();
 
-        List<Cell> itineraryToChicken = itineraryToChicken(world);
+        List<Cell> itineraryToChicken = itineraryToChicken(world, false);
         System.out.println("Nb stapes to chicken : " + itineraryToChicken.size());
 
         if (!CollectionUtils.isEmpty(itineraryToChicken)) {
-            newCell = itineraryToChicken.get(0);
+            if (!itineraryToChicken.get(0).equals(world.getEnnemyAI().getCell())) {
+                newCell = itineraryToChicken.get(0);
+            } else {
+                itineraryToChicken = itineraryToChicken(world, true);
+
+                if (!CollectionUtils.isEmpty(itineraryToChicken)) {
+                    newCell = itineraryToChicken.get(0);
+                } else {
+                    newCell = getMoveCell(labyrinth, cell);
+                }
+            }
         } else {
             newCell = getMoveCell(labyrinth, cell);
         }
@@ -44,7 +54,7 @@ public class IA {
         return orders;
     }
 
-    public static List<Cell> itineraryToChicken(GameWorld world) {
+    public static List<Cell> itineraryToChicken(GameWorld world, Boolean escapeEnnemy) {
         List<Cell> itineraryToChicken = new AwesomeList<>();
         List<List<Cell>> itineraries = new AwesomeList<>();
         List<List<Cell>> newItineraries = new AwesomeList<>();
@@ -77,20 +87,25 @@ public class IA {
                 tryedCells.addAll(posibleMoves);
 
                 for (Cell c : posibleMoves) {
-                    List<Cell> newItinerary = itinerary;
-                    newItinerary.add(c);
-                    newItineraries.add(newItinerary);
+                    if (!escapeEnnemy || !c.equals(world.getEnnemyAI().getCell())) {
+                        List<Cell> newItinerary = new AwesomeList<>();
+                        newItinerary.addAll(itinerary);
+                        newItinerary.add(c);
+                        newItineraries.add(newItinerary);
 
-                    if (world.getChicken().getCell().equals(c)) {
-                        System.out.println("----- FOUND CHICKEN -----");
-                        foundChicken = true;
-                        itineraryToChicken = newItinerary;
-                        break;
+                        if (world.getChicken().getCell().equals(c)) {
+                            System.out.println("----- FOUND CHICKEN -----");
+                            foundChicken = true;
+                            itineraryToChicken = newItinerary;
+                            break;
+                        }
                     }
                 }
             }
 
-            itineraries = newItineraries;
+            itineraries.clear();
+            newItineraries.stream()
+                    .collect(Collectors.collectingAndThen(Collectors.toList(), itineraries::addAll));
             newItineraries.clear();
         } while (!foundChicken && itineraryTurns < 200);
 

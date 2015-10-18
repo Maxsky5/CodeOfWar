@@ -74,4 +74,6 @@ public class AI {
     public CharacterSkin getProfil() {
         return profil;
     }
+
+
 }
