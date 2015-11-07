@@ -15,6 +15,7 @@ public class IA {
     public static Cell currentPosition = null;
     public static List<Cell> positions = new ArrayList<>();
     public static Integer turn = 0;
+    public static Integer nbSavedMove = 0;
 
     public static List<Order> executeTurn(GameWorld world) {
         turn++;
@@ -31,26 +32,37 @@ public class IA {
 
         List<Cell> itineraryToChicken = itineraryToChicken(world, false);
         System.out.println("Nb stapes to chicken : " + itineraryToChicken.size());
+        System.out.println("Nb saved move : " + nbSavedMove);
 
-        if (!CollectionUtils.isEmpty(itineraryToChicken)) {
-            if (!itineraryToChicken.get(0).equals(world.getEnnemyAI().getCell())) {
-                newCell = itineraryToChicken.get(0);
+        if (turn <= 5) {
+            nbSavedMove++;
+        } else if (!CollectionUtils.isEmpty(itineraryToChicken)) {
+            if (itineraryToChicken.size() <= 5 && !itineraryToChicken.contains(world.getEnnemyAI().getCell())) {
+                orders.addAll(itineraryToChicken.stream().map(c -> new MoveOrder(c.getId())).collect(Collectors.toList()));
+                positions.addAll(itineraryToChicken);
             } else {
-                itineraryToChicken = itineraryToChicken(world, true);
 
-                if (!CollectionUtils.isEmpty(itineraryToChicken)) {
+                if (!itineraryToChicken.get(0).equals(world.getEnnemyAI().getCell())) {
                     newCell = itineraryToChicken.get(0);
                 } else {
-                    newCell = getMoveCell(labyrinth, cell);
+                    itineraryToChicken = itineraryToChicken(world, true);
+
+                    if (!CollectionUtils.isEmpty(itineraryToChicken)) {
+                        newCell = itineraryToChicken.get(0);
+                    } else {
+                        newCell = getMoveCell(labyrinth, cell);
+                    }
                 }
+
+                orders.add(new MoveOrder(newCell.getId()));
+                positions.add(newCell);
             }
         } else {
             newCell = getMoveCell(labyrinth, cell);
+            orders.add(new MoveOrder(newCell.getId()));
+            positions.add(newCell);
         }
 
-        orders.add(new MoveOrder(newCell.getId()));
-
-        positions.add(newCell);
         return orders;
     }
 
@@ -82,7 +94,7 @@ public class IA {
             itineraryTurns++;
 
             for (List<Cell> itinerary : itineraries) {
-                Cell lastCell = ((AwesomeList<Cell>)itinerary).getLastElement();
+                Cell lastCell = ((AwesomeList<Cell>) itinerary).getLastElement();
                 List<Cell> posibleMoves = getPosibleNewMoves(labyrinth, tryedCells, lastCell);
                 tryedCells.addAll(posibleMoves);
 
