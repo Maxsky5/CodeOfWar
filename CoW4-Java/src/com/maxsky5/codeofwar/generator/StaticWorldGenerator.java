@@ -5,10 +5,10 @@ package com.maxsky5.codeofwar.generator;
  */
 
 import com.maxsky5.codeofwar.actions.IA;
+import com.maxsky5.codeofwar.socket.CharacterSkin;
 import com.maxsky5.codeofwar.socket.SocketManager;
 import com.maxsky5.codeofwar.world.DynamicGameWorld;
 import com.maxsky5.codeofwar.world.GameWorld;
-import com.maxsky5.codeofwar.socket.CharacterSkin;
 
 /**
  * en: This class generates the labyrinth data structure for StaticGameWorld class
@@ -19,16 +19,17 @@ public class StaticWorldGenerator {
     public static void main(String[] args) {
         new SocketManager().connectToServer(
                 "localhost",
+//                "qualif.codeofwar.net",
                 8127,
-                "MyAI",
-                "",
-                "http://cdn5.coloritou.com/dessins/peindre/2011001/b03d302a8229d1f520dd950b130566be.png",
-                CharacterSkin.BARBARIAN,
+                "Maxsky5",
+                "45a574d77a65757e78dbaa401900ac0f",
+                "http://icons.iconarchive.com/icons/martin-berube/flat-animal/256/chicken-icon.png",
+                CharacterSkin.KNIGHT,
                 IA::executeTurn,
                 new DynamicGameWorld());
     }
 
-    private static void printWorld(GameWorld world) {
+    public static void printWorld(GameWorld world) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         for (int i = 0; i < world.getLabyrinth().length; i++) {
@@ -73,7 +74,7 @@ public class StaticWorldGenerator {
                 sb.append("\n");
             }
             sb.append("}");
-            if (i < (world.getLabyrinth().length - 1))  {
+            if (i < (world.getLabyrinth().length - 1)) {
                 sb.append(",");
             }
             sb.append("\n");

@@ -6,82 +6,96 @@ import com.maxsky5.codeofwar.world.GameWorld;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class IA {
 
-    public static Cell currentPosition = null;
-    public static List<Cell> positions = new ArrayList<>();
-    public static Integer turn = 0;
-    public static Integer nbSavedMove = 0;
+    public static List<Cell> positions = new AwesomeList<>();
+    public static List<Cell> chickenPositions = new AwesomeList<>();
 
     public static List<Order> executeTurn(GameWorld world) {
-        turn++;
         System.out.println("---------------------");
-        System.out.println("Tour : " + turn);
+        System.out.println("Tour : " + world.getGameTurn());
+        System.out.println("Nb saved move : " + world.getMyAI().getMouvementPoints());
 
         Cell cell = world.getMyAI().getCell();
         Cell newCell;
 
-        currentPosition = cell;
+        System.out.println("My Position : " + cell.getLine() + " / " + cell.getColumn());
 
         List<Order> orders = new ArrayList<>();
-        Cell[][] labyrinth = world.getLabyrinth();
 
-        List<Cell> itineraryToChicken = itineraryToChicken(world, false);
-        System.out.println("Nb stapes to chicken : " + itineraryToChicken.size());
-        System.out.println("Nb saved move : " + nbSavedMove);
+        if (null != cell.getItem()) {
+            orders.add(new PickUpOrder());
+        }
 
-        if (turn <= 5) {
-            nbSavedMove++;
-        } else if (!CollectionUtils.isEmpty(itineraryToChicken)) {
-            if (itineraryToChicken.size() <= 5 && !itineraryToChicken.contains(world.getEnnemyAI().getCell())) {
+        chickenPositions.add(world.getChicken().getCell());
+
+        if (world.getMyAI().getMouvementPoints() >= 5) {
+            List<Cell> itineraryToChicken = getMyItineraryToChicken(world, world.getEnnemyAI().getCell());
+            List<Cell> enemyItineraryToChicken = getMyEnemyItineraryToChicken(world, null);
+            System.out.println("Stapes 1 to chicken : " + itineraryToChicken.size());
+            System.out.println("Stapes 2 to chicken : " + enemyItineraryToChicken.size());
+
+            if (itineraryToChicken.size() <= world.getMyAI().getMouvementPoints() && !itineraryToChicken.contains(world.getEnnemyAI().getCell())) {
                 orders.addAll(itineraryToChicken.stream().map(c -> new MoveOrder(c.getId())).collect(Collectors.toList()));
                 positions.addAll(itineraryToChicken);
+                System.out.println("Catched !!");
             } else {
+                Cell chickenTargetCell = getNextChickenTargetCell(world);
 
-                if (!itineraryToChicken.get(0).equals(world.getEnnemyAI().getCell())) {
-                    newCell = itineraryToChicken.get(0);
+                if (null == chickenTargetCell) {
+                    System.out.println("Chicken Target : NULL");
                 } else {
-                    itineraryToChicken = itineraryToChicken(world, true);
+                    System.out.println("Chicken Target : " + chickenTargetCell.getLine() + " / " + chickenTargetCell.getColumn());
+                }
 
-                    if (!CollectionUtils.isEmpty(itineraryToChicken)) {
-                        newCell = itineraryToChicken.get(0);
+                if (enemyItineraryToChicken.size() < itineraryToChicken.size() && null != chickenTargetCell && !isOnChickenWay(world, chickenTargetCell)) {
+                    List<Cell> itineraryToChickenBis = getItinerary(world.getLabyrinth(), cell, chickenTargetCell, Arrays.asList(world.getEnnemyAI().getCell()));
+
+                    if (!CollectionUtils.isEmpty(itineraryToChickenBis)) {
+                        System.out.println("----- Itinerary Bis -----");
+                        newCell = itineraryToChickenBis.get(0);
                     } else {
-                        newCell = getMoveCell(labyrinth, cell);
+                        System.out.println("----- Itinerary Bis Fail -----");
+                        newCell = itineraryToChicken.get(0);
                     }
+                } else {
+                    newCell = itineraryToChicken.get(0);
                 }
 
                 orders.add(new MoveOrder(newCell.getId()));
                 positions.add(newCell);
             }
-        } else {
-            newCell = getMoveCell(labyrinth, cell);
-            orders.add(new MoveOrder(newCell.getId()));
-            positions.add(newCell);
         }
 
         return orders;
     }
 
-    public static List<Cell> itineraryToChicken(GameWorld world, Boolean escapeEnnemy) {
-        List<Cell> itineraryToChicken = new AwesomeList<>();
+    public static List<Cell> getMyItineraryToChicken(GameWorld world, Cell escape) {
+        return getItinerary(world.getLabyrinth(), world.getMyAI().getCell(), world.getChicken().getCell(), Arrays.asList(escape));
+    }
+
+    public static List<Cell> getMyEnemyItineraryToChicken(GameWorld world, Cell escape) {
+        return getItinerary(world.getLabyrinth(), world.getEnnemyAI().getCell(), world.getChicken().getCell(), Arrays.asList(escape));
+    }
+
+    public static List<Cell> getItinerary(Cell[][] labyrinth, Cell from, Cell to, List<Cell> escape) {
+        List<Cell> itineraryToTarget = new AwesomeList<>();
         List<List<Cell>> itineraries = new AwesomeList<>();
         List<List<Cell>> newItineraries = new AwesomeList<>();
         List<Cell> tryedCells = new AwesomeList<>();
         Integer itineraryTurns = 0;
 
-        Cell cell = world.getMyAI().getCell();
-        Cell[][] labyrinth = world.getLabyrinth();
+        Boolean foundTarget = false;
 
-        Boolean foundChicken = false;
-
-        tryedCells.add(cell);
-        getPosibleMoves(labyrinth, cell).stream()
+        tryedCells.add(from);
+        getPosibleMoves(labyrinth, from).stream()
                 .map(c -> {
-                    List<Cell> l = new AwesomeList();
+                    List<Cell> l = new AwesomeList<>();
                     l.add(c);
                     return l;
                 })
@@ -93,23 +107,24 @@ public class IA {
         do {
             itineraryTurns++;
 
+            itinerariesLoop:
             for (List<Cell> itinerary : itineraries) {
                 Cell lastCell = ((AwesomeList<Cell>) itinerary).getLastElement();
                 List<Cell> posibleMoves = getPosibleNewMoves(labyrinth, tryedCells, lastCell);
                 tryedCells.addAll(posibleMoves);
 
                 for (Cell c : posibleMoves) {
-                    if (!escapeEnnemy || !c.equals(world.getEnnemyAI().getCell())) {
+                    if (null == escape || !escape.contains(c)) {
                         List<Cell> newItinerary = new AwesomeList<>();
                         newItinerary.addAll(itinerary);
                         newItinerary.add(c);
                         newItineraries.add(newItinerary);
 
-                        if (world.getChicken().getCell().equals(c)) {
-                            System.out.println("----- FOUND CHICKEN -----");
-                            foundChicken = true;
-                            itineraryToChicken = newItinerary;
-                            break;
+                        if (to.equals(c)) {
+                            System.out.println("----- FOUND -----");
+                            foundTarget = true;
+                            itineraryToTarget = newItinerary;
+                            break itinerariesLoop;
                         }
                     }
                 }
@@ -119,9 +134,61 @@ public class IA {
             newItineraries.stream()
                     .collect(Collectors.collectingAndThen(Collectors.toList(), itineraries::addAll));
             newItineraries.clear();
-        } while (!foundChicken && itineraryTurns < 200);
+        } while (!foundTarget && itineraryTurns < 200);
 
-        return itineraryToChicken;
+        return itineraryToTarget;
+    }
+
+    public static Cell getNextChickenTargetCell(GameWorld world) {
+        if (world.getChicken().getCell().isIntersection() || chickenPositions.size() < 2) {
+            return null;
+        }
+
+        Cell[][] labyrinth = world.getLabyrinth();
+        Boolean foundIntersection = false;
+        Cell previousCell = chickenPositions.get(chickenPositions.size() - 2);
+        Cell cell = chickenPositions.get(chickenPositions.size() - 1);
+        Integer nbTry = 0;
+        Integer nbMaxTry = 50;
+
+        do {
+            nbTry++;
+            List<Cell> posibleMoves = new AwesomeList<>();
+            if (cell.canRight()) {
+                posibleMoves.add(labyrinth[cell.getLine()][cell.getColumn() + 1]);
+            }
+            if (cell.canLeft()) {
+                posibleMoves.add(labyrinth[cell.getLine()][cell.getColumn() - 1]);
+            }
+            if (cell.canTop()) {
+                posibleMoves.add(labyrinth[cell.getLine() - 1][cell.getColumn()]);
+            }
+            if (cell.canBottom()) {
+                posibleMoves.add(labyrinth[cell.getLine() + 1][cell.getColumn()]);
+            }
+
+            for (Cell c : posibleMoves) {
+                if (!c.equals(previousCell)) {
+                    previousCell = cell;
+                    cell = c;
+
+                    if (cell.isIntersection()) {
+                        foundIntersection = true;
+                    }
+
+                    break;
+                }
+            }
+
+        } while (!foundIntersection && nbTry < nbMaxTry);
+
+        return foundIntersection ? cell : null;
+    }
+
+    public static Boolean isOnChickenWay(GameWorld world, Cell chickenTarget) {
+        List<Cell> chickenItinerary = getItinerary(world.getLabyrinth(), world.getChicken().getCell(), chickenTarget, null);
+
+        return !CollectionUtils.isEmpty(chickenItinerary) && chickenItinerary.contains(world.getMyAI().getCell());
     }
 
     public static List<Cell> getPosibleNewMoves(Cell[][] labyrinth, List<Cell> moves, Cell cell) {
@@ -181,10 +248,6 @@ public class IA {
                 Integer randomMove = new Double(Math.floor(Math.random() * posibleMoves.size())).intValue();
                 orderCell = posibleMoves.get(randomMove);
             }
-
-            System.out.println("Posible Moves : " + posibleMoves.size());
-            System.out.println("Line : " + orderCell.getLine() + " --- Column : " + orderCell.getColumn());
-
         } else {
             if (cell.canRight()) {
                 orderCell = labyrinth[cell.getLine()][cell.getColumn() + 1];

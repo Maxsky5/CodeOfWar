@@ -8,6 +8,7 @@ package com.maxsky5.codeofwar.world;
  * A Cell
  */
 public class Cell {
+
     private Long id;
     private int line;
     private int column;
@@ -32,9 +33,13 @@ public class Cell {
         this.item = item;
     }
 
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public void setId(Long id) { this.id = id; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public boolean canLeft() {
         return left;
@@ -76,9 +81,13 @@ public class Cell {
         this.line = line;
     }
 
-    public int getColumn() { return column; }
+    public int getColumn() {
+        return column;
+    }
 
-    public void setColumn(int column) { this.column = column; }
+    public void setColumn(int column) {
+        this.column = column;
+    }
 
     public Item getItem() {
         return item;
@@ -86,6 +95,24 @@ public class Cell {
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public Boolean isIntersection() {
+        Integer nbWay = 0;
+        if (left) {
+            nbWay++;
+        }
+        if (right) {
+            nbWay++;
+        }
+        if (top) {
+            nbWay++;
+        }
+        if (bottom) {
+            nbWay++;
+        }
+
+        return nbWay > 2;
     }
 
     @Override

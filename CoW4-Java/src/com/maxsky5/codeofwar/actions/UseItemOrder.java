@@ -2,9 +2,6 @@ package com.maxsky5.codeofwar.actions;
 
 import com.maxsky5.codeofwar.world.Item;
 
-/**
- * Created by Arsenik on 19/08/15.
- */
 public class UseItemOrder extends Order {
     private Item item;
 
