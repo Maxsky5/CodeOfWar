@@ -72,17 +72,18 @@ public class IA {
                 System.out.println("Catched !!");
             } else {
                 Cell chickenTargetCell = getNextChickenTargetCell(world);
+                List<Cell> itineraryToChickenTarget = getItinerary(world.getLabyrinth(), cell, chickenTargetCell, Arrays.asList(world.getEnnemyAI().getCell()));
+                List<Cell> chickenItineraryToTarget = getItinerary(world.getLabyrinth(), world.getChicken().getCell(), chickenTargetCell, Arrays.asList(world.getEnnemyAI().getCell()));
 
-                if (itineraryToChicken.size() < 15 && world.getMyAI().getItems().contains(new Item(ItemType.InvisibilityPotion))) {
+                if (canUsePotion(world, chickenItineraryToTarget, itineraryToChicken, itineraryToChickenTarget)) {
                     System.out.println("Invisible !!!!!");
                     orders.add(new UseItemOrder(new Item(ItemType.InvisibilityPotion)));
                 }
 
                 if (enemyItineraryToChicken.size() < itineraryToChicken.size() && null != chickenTargetCell && !isOnChickenWay(world, chickenTargetCell)) {
-                    List<Cell> itineraryToChickenBis = getItinerary(world.getLabyrinth(), cell, chickenTargetCell, Arrays.asList(world.getEnnemyAI().getCell()));
 
-                    if (!CollectionUtils.isEmpty(itineraryToChickenBis)) {
-                        newCell = itineraryToChickenBis.get(0);
+                    if (!CollectionUtils.isEmpty(itineraryToChickenTarget)) {
+                        newCell = itineraryToChickenTarget.get(0);
                     } else {
                         newCell = itineraryToChicken.get(0);
                     }
@@ -114,6 +115,26 @@ public class IA {
         }
 
         return orders;
+    }
+
+    public static Boolean canUsePotion(GameWorld world, List<Cell> chickenItinerary, List<Cell> itineraryToChicken, List<Cell> itineraryToChickenTarget) {
+        if (!world.getMyAI().getItems().contains(new Item(ItemType.InvisibilityPotion))) {
+            return false;
+        }
+
+        if (world.getMyAI().getInvisibilityDuration() > 2) {
+            return false;
+        }
+
+        Integer nbPotions = (int) world.getMyAI().getItems().stream()
+            .filter(i -> i.equals(new Item(ItemType.InvisibilityPotion)))
+            .count();
+
+        if ((CollectionUtils.isEmpty(chickenItinerary) || chickenItinerary.size() <= 2) && itineraryToChicken.size() <= (nbPotions * 10 + 5)) {
+            return true;
+        }
+
+        return false;
     }
 
     public static List<Cell> getMyItineraryToChicken(GameWorld world, Cell escape) {
@@ -182,7 +203,7 @@ public class IA {
 
     public static Cell getNextChickenTargetCell(GameWorld world) {
         if (world.getChicken().getCell().isIntersection() || chickenPositions.size() < 2) {
-            return null;
+            return world.getChicken().getCell();
         }
 
         Cell[][] labyrinth = world.getLabyrinth();
