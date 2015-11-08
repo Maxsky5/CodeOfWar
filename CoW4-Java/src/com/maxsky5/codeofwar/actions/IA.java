@@ -18,10 +18,20 @@ public class IA {
     public static List<Cell> positions = new AwesomeList<>();
     public static List<Cell> chickenPositions = new AwesomeList<>();
     public static Boolean foundPotion = false;
-    public static Boolean hasPotion = false;
     public static List<Cell> itineraryToPotion = null;
 
+    private static void initializeGame() {
+        positions.clear();
+        chickenPositions.clear();
+        foundPotion = false;
+        itineraryToPotion = null;
+    }
+
     public static List<Order> executeTurn(GameWorld world) {
+        if (world.getGameTurn() == 0) {
+            initializeGame();
+        }
+
         System.out.println("---------------------");
         System.out.println("Tour : " + world.getGameTurn());
         System.out.println("Nb saved move : " + world.getMyAI().getMouvementPoints());
@@ -63,7 +73,7 @@ public class IA {
             } else {
                 Cell chickenTargetCell = getNextChickenTargetCell(world);
 
-                if (itineraryToChicken.size() < 20 && world.getMyAI().getItems().contains(new Item(ItemType.InvisibilityPotion))) {
+                if (itineraryToChicken.size() < 15 && world.getMyAI().getItems().contains(new Item(ItemType.InvisibilityPotion))) {
                     System.out.println("Invisible !!!!!");
                     orders.add(new UseItemOrder(new Item(ItemType.InvisibilityPotion)));
                 }
