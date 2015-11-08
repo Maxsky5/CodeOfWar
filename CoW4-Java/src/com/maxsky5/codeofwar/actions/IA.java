@@ -3,6 +3,8 @@ package com.maxsky5.codeofwar.actions;
 import com.maxsky5.codeofwar.utils.AwesomeList;
 import com.maxsky5.codeofwar.world.Cell;
 import com.maxsky5.codeofwar.world.GameWorld;
+import com.maxsky5.codeofwar.world.Item;
+import com.maxsky5.codeofwar.world.ItemType;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
@@ -15,6 +17,9 @@ public class IA {
 
     public static List<Cell> positions = new AwesomeList<>();
     public static List<Cell> chickenPositions = new AwesomeList<>();
+    public static Boolean foundPotion = false;
+    public static Boolean hasPotion = false;
+    public static List<Cell> itineraryToPotion = null;
 
     public static List<Order> executeTurn(GameWorld world) {
         System.out.println("---------------------");
@@ -30,15 +35,22 @@ public class IA {
 
         if (null != cell.getItem()) {
             orders.add(new PickUpOrder());
+
+            if (cell.getItem().getType().equals(ItemType.InvisibilityPotion)) {
+                foundPotion = true;
+                itineraryToPotion = null;
+            }
         }
 
-        if (!CollectionUtils.isEmpty(world.getMyAI().getItems())) {
-            orders.add(new UseItemOrder(world.getMyAI().getItems().get(0)));
+        if (!CollectionUtils.isEmpty(world.getMyAI().getItems()) && world.getMyAI().getItems().contains(new Item(ItemType.Trap))) {
+            orders.add(new UseItemOrder(new Item(ItemType.Trap)));
         }
 
         chickenPositions.add(world.getChicken().getCell());
 
-        if (world.getMyAI().getMouvementPoints() >= 5) {
+        if (world.getMyAI().getMouvementPoints() < 5) {
+
+        } else if (foundPotion) {
             List<Cell> itineraryToChicken = getMyItineraryToChicken(world, world.getEnnemyAI().getCell());
             List<Cell> enemyItineraryToChicken = getMyEnemyItineraryToChicken(world, null);
             System.out.println("Stapes 1 to chicken : " + itineraryToChicken.size());
@@ -51,20 +63,17 @@ public class IA {
             } else {
                 Cell chickenTargetCell = getNextChickenTargetCell(world);
 
-                if (null == chickenTargetCell) {
-                    System.out.println("Chicken Target : NULL");
-                } else {
-                    System.out.println("Chicken Target : " + chickenTargetCell.getLine() + " / " + chickenTargetCell.getColumn());
+                if (itineraryToChicken.size() < 20 && world.getMyAI().getItems().contains(new Item(ItemType.InvisibilityPotion))) {
+                    System.out.println("Invisible !!!!!");
+                    orders.add(new UseItemOrder(new Item(ItemType.InvisibilityPotion)));
                 }
 
                 if (enemyItineraryToChicken.size() < itineraryToChicken.size() && null != chickenTargetCell && !isOnChickenWay(world, chickenTargetCell)) {
                     List<Cell> itineraryToChickenBis = getItinerary(world.getLabyrinth(), cell, chickenTargetCell, Arrays.asList(world.getEnnemyAI().getCell()));
 
                     if (!CollectionUtils.isEmpty(itineraryToChickenBis)) {
-                        System.out.println("----- Itinerary Bis -----");
                         newCell = itineraryToChickenBis.get(0);
                     } else {
-                        System.out.println("----- Itinerary Bis Fail -----");
                         newCell = itineraryToChicken.get(0);
                     }
                 } else {
@@ -74,6 +83,24 @@ public class IA {
                 orders.add(new MoveOrder(newCell.getId()));
                 positions.add(newCell);
             }
+        } else {
+            List<Cell> cellsWithItems = world.getCellsWithItems();
+
+            if (null == itineraryToPotion) {
+                Cell invisibilityPotion = cellsWithItems.stream()
+                    .filter(c -> c.getItem().getType().equals(ItemType.InvisibilityPotion))
+                    .map(c -> getItinerary(world.getLabyrinth(), world.getMyAI().getCell(), c, null))
+                    .min((i1, i2) -> Integer.compare(i1.size(), i2.size()))
+                    .map(i -> i.get(i.size() - 1))
+                    .get();
+                itineraryToPotion = getItinerary(world.getLabyrinth(), cell, invisibilityPotion, null);
+            }
+
+            newCell = itineraryToPotion.get(0);
+            orders.add(new MoveOrder(newCell.getId()));
+            positions.add(newCell);
+
+            itineraryToPotion.remove(0);
         }
 
         return orders;
@@ -98,15 +125,15 @@ public class IA {
 
         tryedCells.add(from);
         getPosibleMoves(labyrinth, from).stream()
-                .map(c -> {
-                    List<Cell> l = new AwesomeList<>();
-                    l.add(c);
-                    return l;
-                })
-                .collect(Collectors.collectingAndThen(Collectors.toList(), itineraries::addAll));
+            .map(c -> {
+                List<Cell> l = new AwesomeList<>();
+                l.add(c);
+                return l;
+            })
+            .collect(Collectors.collectingAndThen(Collectors.toList(), itineraries::addAll));
         itineraries.stream()
-                .flatMap(Collection::stream)
-                .collect(Collectors.collectingAndThen(Collectors.toList(), tryedCells::addAll));
+            .flatMap(Collection::stream)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), tryedCells::addAll));
 
         do {
             itineraryTurns++;
@@ -136,7 +163,7 @@ public class IA {
 
             itineraries.clear();
             newItineraries.stream()
-                    .collect(Collectors.collectingAndThen(Collectors.toList(), itineraries::addAll));
+                .collect(Collectors.collectingAndThen(Collectors.toList(), itineraries::addAll));
             newItineraries.clear();
         } while (!foundTarget && itineraryTurns < 200);
 
@@ -197,8 +224,8 @@ public class IA {
 
     public static List<Cell> getPosibleNewMoves(Cell[][] labyrinth, List<Cell> moves, Cell cell) {
         return getPosibleMoves(labyrinth, cell).stream()
-                .filter(c -> moves.indexOf(c) == -1)
-                .collect(Collectors.toList());
+            .filter(c -> moves.indexOf(c) == -1)
+            .collect(Collectors.toList());
     }
 
     public static List<Cell> getPosibleMoves(Cell[][] labyrinth, Cell cell) {
