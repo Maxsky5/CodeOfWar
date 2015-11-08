@@ -32,6 +32,10 @@ public class IA {
             orders.add(new PickUpOrder());
         }
 
+        if (!CollectionUtils.isEmpty(world.getMyAI().getItems())) {
+            orders.add(new UseItemOrder(world.getMyAI().getItems().get(0)));
+        }
+
         chickenPositions.add(world.getChicken().getCell());
 
         if (world.getMyAI().getMouvementPoints() >= 5) {

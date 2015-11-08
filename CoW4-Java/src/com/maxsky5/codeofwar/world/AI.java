@@ -5,9 +5,6 @@ import com.maxsky5.codeofwar.socket.CharacterSkin;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by TheArsenik on 16/08/15.
- */
 public class AI {
     private Long id;
     private int invisibilityDuration;
